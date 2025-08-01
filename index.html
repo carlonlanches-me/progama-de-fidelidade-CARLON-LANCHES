@@ -1,80 +1,83 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>Programa de Fidelidade Carlo Lanches</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    .mensagem { margin-top: 20px; font-size: 18px; font-weight: bold; color: green; }
-    h1 { margin-bottom: 0; font-size: 24px; }
-    h2.nome { margin-top: 0; font-size: 36px; }
-    .form-group { margin: 12px 0; display: block; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    .form-group {
+      margin: 15px 0;
+    }
+    input {
+      padding: 6px;
+      width: 200px;
+    }
+    button {
+      padding: 10px 20px;
+    }
+    #mensagem {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
   </style>
 </head>
 <body>
   <h1>Programa de Fidelidade</h1>
-  <h2 class="nome">Carlo Lanches</h2>
+  <h2>Carlo Lanches</h2>
 
   <div class="form-group">
-    <label>Nome do Cliente: <input id="nomeCliente"></label>
-  </div>
-  <div class="form-group">
-    <label>Telefone do Cliente: <input id="telefoneCliente"></label>
-  </div>
-  <div class="form-group">
-    <label>Valor da Compra (R$): <input type="number" id="valorCompra"></label>
-  </div>
-  <div class="form-group">
-    <button onclick="registrarCompra()">Registrar Compra</button>
+    <label>Nome do Cliente:</label><br>
+    <input type="text" id="nomeCliente">
   </div>
 
-  <div class="mensagem" id="mensagemCliente"></div>
+  <div class="form-group">
+    <label>Telefone do Cliente:</label><br>
+    <input type="text" id="telefoneCliente">
+  </div>
+
+  <div class="form-group">
+    <label>Valor da Compra (R$):</label><br>
+    <input type="number" id="valorCompra">
+  </div>
+
+  <button onclick="registrarCompra()">Registrar Compra</button>
+
+  <div id="mensagem"></div>
 
   <script>
     function registrarCompra() {
-      const nome = document.getElementById("nomeCliente").value.trim();
-      const telefone = document.getElementById("telefoneCliente").value.trim();
-      const valor = parseFloat(document.getElementById("valorCompra").value);
+      const nome = document.getElementById('nomeCliente').value.trim();
+      const telefone = document.getElementById('telefoneCliente').value.trim();
+      const valor = parseFloat(document.getElementById('valorCompra').value);
 
       if (!nome || !telefone || isNaN(valor) || valor <= 0) {
-        alert("Preencha todos os dados corretamente.");
+        alert('Por favor, preencha todos os campos corretamente.');
         return;
       }
 
-      let registros = JSON.parse(localStorage.getItem("registrosFidelidade")) || {};
-
-      if (!registros[nome]) {
-        registros[nome] = { telefone: telefone, contador: 0 };
+      // Armazenar no localStorage (simulação de banco de dados)
+      let dados = JSON.parse(localStorage.getItem('clientes') || '{}');
+      if (!dados[nome]) {
+        dados[nome] = { telefone: telefone, total: 0 };
       }
 
-      registros[nome].telefone = telefone;
-      registros[nome].contador++;
+      dados[nome].total += 1;
 
-      let progresso = registros[nome].contador;
-      let restante = 10 - progresso;
+      localStorage.setItem('clientes', JSON.stringify(dados));
 
-      let mensagemFinal = `Parabéns! Compra registrada com sucesso.\n`;
+      document.getElementById('mensagem').innerText =
+        `✅ Compra registrada com sucesso! Você está na ${dados[nome].total}ª de 10.`
 
-      if (progresso < 10) {
-        mensagemFinal += `Você está na compra ${progresso} de 10.`;
-      } else {
-        mensagemFinal += `🎉 Você completou 10 compras e ganhou seu bônus!`;
-        registros[nome].contador = 0;
-      }
-
-      document.getElementById("mensagemCliente").innerText = mensagemFinal;
-
-      // salva o registro localmente (não aparece em tela)
-      const dados = JSON.parse(localStorage.getItem("registroCompra")) || [];
-      dados.push({
-        nome: nome,
-        telefone: telefone,
-        valor: valor,
-        pontos: 1,
-        data: new Date().toLocaleString()
-      });
-      localStorage.setItem("registroCompra", JSON.stringify(dados));
-      localStorage.setItem("registrosFidelidade", JSON.stringify(registros));
+      // Limpar formulário
+      document.getElementById('nomeCliente').value = '';
+      document.getElementById('telefoneCliente').value = '';
+      document.getElementById('valorCompra').value = '';
     }
   </script>
 </body>
