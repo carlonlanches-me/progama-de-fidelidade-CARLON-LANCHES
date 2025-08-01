@@ -1,2 +1,91 @@
-# progama-de-fidelidade-CARLON-LANCHES
- Programa de fidelidade com QR Code para clientes
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Programa de Fidelidade Carlo Lanches</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+    .cliente { border: 1px solid #ccc; padding: 10px; margin-top: 10px; text-align: left; }
+    h1 { margin-bottom: 0; font-size: 24px; }
+    h2.nome { margin-top: 0; font-size: 36px; }
+    .form-group { margin: 12px 0; display: block; }
+  </style>
+</head>
+<body>
+  <h1>Programa de Fidelidade</h1>
+  <h2 class="nome">Carlo Lanches</h2>
+
+  <div class="form-group">
+    <label>Nome do Cliente: <input id="nomeCliente"></label>
+  </div>
+  <div class="form-group">
+    <label>Telefone do Cliente: <input id="telefoneCliente"></label>
+  </div>
+  <div class="form-group">
+    <label>Valor da Compra (R$): <input type="number" id="valorCompra"></label>
+  </div>
+  <div class="form-group">
+    <button onclick="registrarCompra()">Registrar Compra</button>
+  </div>
+
+  <div id="qrcode"></div>
+
+  <div id="clientes"></div>
+
+  <script>
+    let clientes = {};
+
+    function registrarCompra() {
+      const nome = document.getElementById("nomeCliente").value.trim();
+      const telefone = document.getElementById("telefoneCliente").value.trim();
+      const valor = parseFloat(document.getElementById("valorCompra").value);
+
+      if (!nome || !telefone || isNaN(valor) || valor <= 0) {
+        alert("Preencha todos os dados corretamente.");
+        return;
+      }
+
+      if (!clientes[nome]) {
+        clientes[nome] = { pontos: 0, telefone: telefone };
+      }
+
+      let pontosGanhos = valor * 0.10;
+      clientes[nome].pontos += pontosGanhos;
+      clientes[nome].telefone = telefone;
+
+      let mensagem = `Compra de R$${valor.toFixed(2)} registrada.\nCliente: ${nome}\nTelefone: ${telefone}\nPontos acumulados: ${clientes[nome].pontos.toFixed(2)}`;
+
+      if (clientes[nome].pontos >= 100) {
+        mensagem += `\n\n🎉 Parabéns, ${nome}! Você atingiu 100 pontos e ganhou um bônus!`;
+        clientes[nome].pontos = 0;
+      }
+
+      gerarQRCode(mensagem);
+      atualizarListaClientes();
+    }
+
+    function gerarQRCode(texto) {
+      const divQR = document.getElementById("qrcode");
+      divQR.innerHTML = "";
+      new QRCode(divQR, {
+        text: texto,
+        width: 200,
+        height: 200
+      });
+    }
+
+    function atualizarListaClientes() {
+      const div = document.getElementById("clientes");
+      div.innerHTML = "";
+      for (const nome in clientes) {
+        const c = clientes[nome];
+        const el = document.createElement("div");
+        el.className = "cliente";
+        el.textContent = `${nome} — ${c.pontos.toFixed(2)} pontos — Tel: ${c.telefone}`;
+        div.appendChild(el);
+      }
+    }
+  </script>
+</body>
+</html>
