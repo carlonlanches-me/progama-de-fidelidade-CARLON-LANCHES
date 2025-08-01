@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Programa de Fidelidade Carlo Lanches</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-    .cliente { border: 1px solid #ccc; padding: 10px; margin-top: 10px; text-align: left; }
+    .mensagem { margin-top: 20px; font-size: 18px; font-weight: bold; color: green; }
     h1 { margin-bottom: 0; font-size: 24px; }
     h2.nome { margin-top: 0; font-size: 36px; }
     .form-group { margin: 12px 0; display: block; }
@@ -29,13 +28,9 @@
     <button onclick="registrarCompra()">Registrar Compra</button>
   </div>
 
-  <div id="qrcode"></div>
-
-  <div id="clientes"></div>
+  <div class="mensagem" id="mensagemCliente"></div>
 
   <script>
-    let clientes = {};
-
     function registrarCompra() {
       const nome = document.getElementById("nomeCliente").value.trim();
       const telefone = document.getElementById("telefoneCliente").value.trim();
@@ -46,45 +41,40 @@
         return;
       }
 
-      if (!clientes[nome]) {
-        clientes[nome] = { pontos: 0, telefone: telefone };
+      let registros = JSON.parse(localStorage.getItem("registrosFidelidade")) || {};
+
+      if (!registros[nome]) {
+        registros[nome] = { telefone: telefone, contador: 0 };
       }
 
-      let pontosGanhos = valor * 0.10;
-      clientes[nome].pontos += pontosGanhos;
-      clientes[nome].telefone = telefone;
+      registros[nome].telefone = telefone;
+      registros[nome].contador++;
 
-      let mensagem = `Compra de R$${valor.toFixed(2)} registrada.\nCliente: ${nome}\nTelefone: ${telefone}\nPontos acumulados: ${clientes[nome].pontos.toFixed(2)}`;
+      let progresso = registros[nome].contador;
+      let restante = 10 - progresso;
 
-      if (clientes[nome].pontos >= 100) {
-        mensagem += `\n\n🎉 Parabéns, ${nome}! Você atingiu 100 pontos e ganhou um bônus!`;
-        clientes[nome].pontos = 0;
+      let mensagemFinal = `Parabéns! Compra registrada com sucesso.\n`;
+
+      if (progresso < 10) {
+        mensagemFinal += `Você está na compra ${progresso} de 10.`;
+      } else {
+        mensagemFinal += `🎉 Você completou 10 compras e ganhou seu bônus!`;
+        registros[nome].contador = 0;
       }
 
-      gerarQRCode(mensagem);
-      atualizarListaClientes();
-    }
+      document.getElementById("mensagemCliente").innerText = mensagemFinal;
 
-    function gerarQRCode(texto) {
-      const divQR = document.getElementById("qrcode");
-      divQR.innerHTML = "";
-      new QRCode(divQR, {
-        text: texto,
-        width: 200,
-        height: 200
+      // salva o registro localmente (não aparece em tela)
+      const dados = JSON.parse(localStorage.getItem("registroCompra")) || [];
+      dados.push({
+        nome: nome,
+        telefone: telefone,
+        valor: valor,
+        pontos: 1,
+        data: new Date().toLocaleString()
       });
-    }
-
-    function atualizarListaClientes() {
-      const div = document.getElementById("clientes");
-      div.innerHTML = "";
-      for (const nome in clientes) {
-        const c = clientes[nome];
-        const el = document.createElement("div");
-        el.className = "cliente";
-        el.textContent = `${nome} — ${c.pontos.toFixed(2)} pontos — Tel: ${c.telefone}`;
-        div.appendChild(el);
-      }
+      localStorage.setItem("registroCompra", JSON.stringify(dados));
+      localStorage.setItem("registrosFidelidade", JSON.stringify(registros));
     }
   </script>
 </body>
